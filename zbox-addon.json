@@ -1,0 +1,39 @@
+{
+  "key": "hello-addon",
+  "name": "Hello!",
+  "description": "My very first ZBox Addon",
+  "vendor": {
+    "name": "Elias Nahum",
+    "icon_url": "{{localBaseUrl}}/images/logo.png"
+  },
+  "price": {
+    "currency": "CLP",
+    "value": 0
+  },
+  "links": {
+    "published_url": "{{localBaseUrl}}/published",
+    "descriptor_url": "{{localBaseUrl}}/zbox-addon.json",
+    "homepage_url": "http://localhost:3000"
+  },
+  "installable": {
+    "installed_url": "{{localBaseUrl}}/installed",
+    "uninstalled_url": "{{localBaseUrl}}/uninstalled",
+    "config_url": "{{localBaseUrl}}/config",
+    "allow_global": true,
+    "allow_channel": false
+  },
+  "webhook": {
+    "enable_incoming": true,
+    "outgoing": [
+      {
+        "key": "hello_webhook_1",
+        "callback_urls": [
+          "{{localBaseUrl}}/webhook"
+        ],
+        "triggers": [
+          "hello:"
+        ]
+      }
+    ]
+  }
+}
