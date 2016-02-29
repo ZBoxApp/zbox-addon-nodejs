@@ -4,6 +4,8 @@ var router = express.Router();
 var zbox;
 
 module.exports = function(addon) {
+    zbox = api(addon, { client_id: "5srs35euj3nqtx5tedxyhf16ra", client_secret: "fjmr785f37fy5yudcy9msm13no", url: 'http://localhost:8065/' });
+
     /* GET home page. */
     router.get('/',
         function(req, res) {
@@ -54,6 +56,28 @@ module.exports = function(addon) {
             res.json(zbox.prepare('Hi @' + hook.username + '! I completlety agree with you this time.'));
         });
 
+    router.post('/command1', function(req, res) {
+       console.log(req.body);
+        var title = '### Hello @' + req.body.user_name + '!';
+        var obj = {
+            response_type: 'ephemeral',
+            text: title + '\n--- \
+            \n#### Weather in Toronto, Ontario for the Week of February 16th, 2016 \
+            \n\
+            \n| Day                 | Description                      | High   | Low    | \
+            \n|:--------------------|:---------------------------------|:-------|:-------| \
+            \n| Monday, Feb. 15     | Cloudy with a chance of flurries | 3 °C   | -12 °C | \
+            \n| Tuesday, Feb. 16    | Sunny                            | 4 °C   | -8 °C  | \
+            \n| Wednesday, Feb. 17  | Partly cloudly                   | 4 °C   | -14 °C | \
+            \n| Thursday, Feb. 18   | Cloudy with a chance of rain     | 2 °C   | -13 °C | \
+            \n| Friday, Feb. 19     | Overcast                         | 5 °C   | -7 °C  | \
+            \n| Saturday, Feb. 20   | Sunny with cloudy patches        | 7 °C   | -4 °C  | \
+            \n| Sunday, Feb. 21     | Partly cloudy                    | 6 °C   | -9 °C  | \
+            \n---'
+        };
+        return res.json(obj);
+    });
+
     addon.on('published',
         function(clientId, clientSecret) {
             /*
@@ -88,7 +112,7 @@ module.exports = function(addon) {
                 channel_name: channelName
             };
 
-            addon.sendMessage(opts,
+            zbox.sendMessage(opts,
                 function(err) {
                     if (err) {
                         addon.logger.error(err);

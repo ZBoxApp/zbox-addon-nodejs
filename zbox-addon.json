@@ -35,5 +35,18 @@
         ]
       }
     ]
-  }
+  },
+  "commands": [
+    {
+      "url": "{{localBaseUrl}}/command1",
+      "method": "P",
+      "trigger": "hello",
+      "username": "hello",
+      "icon_url": "{{localBaseUrl}}/images/logo.png",
+      "auto_complete": true,
+      "auto_complete_desc": "Test command for Hello! addon",
+      "auto_complete_hint": "[message]",
+      "display_name": "Hello username"
+    }
+  ]
 }
