@@ -4,7 +4,7 @@ var router = express.Router();
 var zbox;
 
 module.exports = function(addon) {
-    zbox = api(addon, { client_id: "5srs35euj3nqtx5tedxyhf16ra", client_secret: "fjmr785f37fy5yudcy9msm13no", url: 'http://localhost:8065/' });
+    zbox = api(addon, {client_id: 'fzy1aca3eibt9ggwamro77fciy', client_secret: '77fcx8byzjbqpn97kydcgsii7r', url: 'http://localhost:8065/'});
 
     /* GET home page. */
     router.get('/',
@@ -19,7 +19,7 @@ module.exports = function(addon) {
         });
 
     router.get('/channels/:team', function(req, res) {
-        zbox.getChannels(req.params.team, function(err, channels) {
+        zbox.channels.getAll(req.params.team, function(err, channels) {
             if (err) {
                 return res.status(err.status).json(err);
             }
@@ -28,13 +28,65 @@ module.exports = function(addon) {
         });
     });
 
-    router.get('/users/:team', function(req, res) {
-        zbox.getUsers(req.params.team, function(err, users) {
+    router.get('/channels/:team/members/:id', function(req, res) {
+        zbox.channels.getMembers(req.params.team, req.params.id, -11, function(err, members) {
             if (err) {
                 return res.status(err.status).json(err);
             }
 
-            return res.json(users);
+            return res.json(members);
+        });
+    });
+
+    router.get('/users/:team', function(req, res) {
+        zbox.users.getAll(req.params.team, function(err, users) {
+            if (err) {
+                return res.status(err.status).json(err);
+            }
+
+            var ids = users.map(function(u) {
+                return u.id;
+            });
+
+            zbox.users.getStatuses(ids, req.params.team, function(error, statuses) {
+                if (error) {
+                    return res.status(error.status).json(error);
+                }
+
+                users.forEach(function(u) {
+                    if (statuses.hasOwnProperty(u.id)) {
+                        u.status = statuses[u.id];
+                    } else {
+                        u.status = 'unknown';
+                    }
+                });
+
+                return res.json(users);
+            });
+        });
+    });
+
+    router.post('/message', function(req, res) {
+        var body = req.body;
+        zbox.posts.sendMessage('73d9grmnutdtmeifc5m7yr7t3a', body.channel_name, body.message, function(err) {
+            if (err) {
+                addon.logger.error(err);
+                return res.status(400).json(err);
+            }
+
+            return res.status(200).send('OK');
+        });
+    });
+
+    router.post('/ephemeral', function(req, res) {
+        var body = req.body;
+        zbox.posts.sendEphemeral('73d9grmnutdtmeifc5m7yr7t3a', body.channel_name, body.user_id, body.message, function(err) {
+            if (err) {
+                addon.logger.error(err);
+                return res.status(400).json(err);
+            }
+
+            return res.status(200).send('OK');
         });
     });
 
@@ -56,12 +108,14 @@ module.exports = function(addon) {
             res.json(zbox.prepare('Hi @' + hook.username + '! I completlety agree with you this time.'));
         });
 
-    router.post('/command1', function(req, res) {
-       console.log(req.body);
-        var title = '### Hello @' + req.body.user_name + '!';
-        var obj = {
-            response_type: 'ephemeral',
-            text: title + '\n--- \
+    router.post('/command1',
+        addon.context(),
+        function(req, res) {
+            console.log(req.command); //eslint-disable-line no-console
+            var title = '### Hello @' + req.body.user_name + '!';
+            var obj = {
+                response_type: 'ephemeral',
+                text: title + '\n--- \
             \n#### Weather in Toronto, Ontario for the Week of February 16th, 2016 \
             \n\
             \n| Day                 | Description                      | High   | Low    | \
@@ -74,9 +128,9 @@ module.exports = function(addon) {
             \n| Saturday, Feb. 20   | Sunny with cloudy patches        | 7 °C   | -4 °C  | \
             \n| Sunday, Feb. 21     | Partly cloudy                    | 6 °C   | -9 °C  | \
             \n---'
-        };
-        return res.json(obj);
-    });
+            };
+            return res.json(obj);
+        });
 
     addon.on('published',
         function(clientId, clientSecret) {
@@ -91,33 +145,30 @@ module.exports = function(addon) {
         });
 
     addon.on('installed',
-        function(team, incoming, outgoing) {
+        function(team, incoming, outgoing) { // agregar commands
             /*
             team contains id and name for the team that installed the addon
             if you configured incoming webhooks incoming contains the token to use
             for each outgoing webhook that you defined you'll have the key and the token
             */
 
-            outgoing.forEach(function(o) {
-                addon.logger.info('Outgoing webhook key: %s, token: %s', o.key, o.token);
-            });
+            if (outgoing) {
+                outgoing.forEach(function(o) {
+                    addon.logger.info('Outgoing webhook key: %s, token: %s', o.key, o.token);
+                });
+            }
 
             // use the API to get the channes to which u can send a message
             var channelName = 'town-square';
 
-            var opts = {
-                token: incoming.token,
-                message: '**This addon has been installed!!** :wink:',
-                team_name: team.name,
-                channel_name: channelName
-            };
-
-            zbox.sendMessage(opts,
-                function(err) {
-                    if (err) {
-                        addon.logger.error(err);
-                    }
-                });
+            if (incoming) {
+                zbox.posts.sendMessage(incoming.token, channelName, '**This addon has been installed!!** :wink:',
+                    function(err) {
+                        if (err) {
+                            addon.logger.error(err);
+                        }
+                    });
+            }
         });
 
     addon.on('uninstalled', function(teamId) {
