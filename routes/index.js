@@ -15,6 +15,7 @@ module.exports = function(addon) {
     router.get('/config',
         addon.context(),
         function(req, res) {
+            console.log(req.context);
             return res.render('config', req.context);
         });
 
@@ -105,7 +106,8 @@ module.exports = function(addon) {
             message -> the text written by the user
             */
             var hook = req.hook;
-            res.json(zbox.prepare('Hi @' + hook.username + '! I completlety agree with you this time.'));
+            console.log(hook);
+            res.json(zbox.posts.prepareMessage('Hi @' + hook.user_name + '! I completlety agree with you this time.'));
         });
 
     router.post('/command1',
