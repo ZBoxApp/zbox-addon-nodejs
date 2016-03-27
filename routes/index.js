@@ -15,7 +15,7 @@ module.exports = function(addon) {
     router.get('/config',
         addon.context(),
         function(req, res) {
-            console.log(req.context);
+            console.log(req.context); //eslint-disable-line no-console
             return res.render('config', req.context);
         });
 
@@ -64,6 +64,8 @@ module.exports = function(addon) {
 
                 return res.json(users);
             });
+
+            return null;
         });
     });
 
@@ -106,7 +108,7 @@ module.exports = function(addon) {
             message -> the text written by the user
             */
             var hook = req.hook;
-            console.log(hook);
+            console.log(hook); //eslint-disable-line no-console
             res.json(zbox.posts.prepareMessage('Hi @' + hook.user_name + '! I completlety agree with you this time.'));
         });
 
